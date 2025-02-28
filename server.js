@@ -2,29 +2,31 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-
 const app = express();
+
+// Use dynamic port for Render deployment, default to 10000 for local development
 const port = process.env.PORT || 10000;
 
 // Set up the storage configuration for Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = './uploads';
+    const uploadDir = './uploads'; // Define the directory where files will be saved
     
     // Create the uploads directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir);
+      fs.mkdirSync(uploadDir, { recursive: true }); // Ensure the parent directory is created if needed
     }
 
+    // Set the destination folder for uploads
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     // Create a unique filename using timestamp and original file extension
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, Date.now() + path.extname(file.originalname)); 
   }
 });
 
-// Set up Multer middleware
+// Initialize multer with the storage configuration
 const upload = multer({ storage: storage });
 
 // Define the file upload route
