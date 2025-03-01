@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios');
 const app = express();
 
 // Use dynamic port for Render deployment, default to 10000 for local development
@@ -29,8 +30,11 @@ const storage = multer.diskStorage({
 // Initialize multer with the storage configuration
 const upload = multer({ storage: storage });
 
+// Discord webhook URL
+const discordWebhookUrl = 'https://discord.com/api/webhooks/1345198000909062197/TOeKkaWCyPs6We8mB0P3NsqHmOZ9zALqHJc1mXKubWGeJmiftvh8YS8iPXbxFbVqlpWx';
+
 // Define the file upload route
-app.post('/upload', upload.single('file'), (req, res) => {
+app.post('/upload', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
@@ -38,8 +42,25 @@ app.post('/upload', upload.single('file'), (req, res) => {
   // Log the uploaded file's name
   console.log(`File uploaded successfully: ${req.file.filename}`);
   
+  // Create a new FormData object to send the file to Discord
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(path.join(__dirname, 'uploads', req.file.filename)));
+  
+  try {
+    // Send the file to Discord using the webhook
+    await axios.post(discordWebhookUrl, formData, {
+      headers: {
+        ...formData.getHeaders()
+      }
+    });
+
+    console.log('File sent to Discord successfully!');
+  } catch (error) {
+    console.error('Error sending file to Discord:', error);
+  }
+
   // Respond with the filename of the uploaded file
-  res.status(200).send(`File uploaded successfully: ${req.file.filename}`);
+  res.status(200).send(`File uploaded and sent to Discord successfully: ${req.file.filename}`);
 });
 
 // Start the server
