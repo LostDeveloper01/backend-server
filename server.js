@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
+const FormData = require('form-data'); // Import form-data
 const app = express();
 
 // Use dynamic port for Render deployment, default to 10000 for local development
@@ -50,7 +51,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     // Send the file to Discord using the webhook
     await axios.post(discordWebhookUrl, formData, {
       headers: {
-        ...formData.getHeaders()
+        ...formData.getHeaders() // This should now work correctly with form-data
       }
     });
 
