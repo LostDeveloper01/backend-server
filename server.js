@@ -6,14 +6,14 @@ const axios = require('axios');
 const FormData = require('form-data'); // Import form-data
 const app = express();
 
-// Use dynamic port for Render deployment, default to 10000 for local development
-const port = process.env.PORT || 10000;
+// Set a static port for the server (use port 10000 or any other port that fits your needs)
+const port = 10000;
 
 // Set up the storage configuration for Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = './uploads'; // Define the directory where files will be saved
-    
+    const uploadDir = path.join(__dirname, 'uploads'); // Use absolute path to avoid issues with relative paths
+
     // Create the uploads directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true }); // Ensure the parent directory is created if needed
@@ -58,6 +58,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     console.log('File sent to Discord successfully!');
   } catch (error) {
     console.error('Error sending file to Discord:', error);
+    return res.status(500).send('Error sending file to Discord.');
   }
 
   // Respond with the filename of the uploaded file
